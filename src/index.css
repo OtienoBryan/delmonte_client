@@ -1,0 +1,275 @@
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+.a4-invoice-print {
+  width: 790px;
+  min-height: 1123px;
+  background: #fff;
+  margin: 0 auto;
+  padding: 16px 12px 200px 12px;
+  box-sizing: border-box;
+  font-size: 12px;
+  position: relative;
+}
+
+.a4-invoice-print h1, .a4-invoice-print h2, .a4-invoice-print h3 {
+  font-size: 14px;
+  margin-bottom: 8px;
+}
+
+.a4-invoice-print p {
+  font-size: 11px;
+  margin: 2px 0;
+}
+
+/* Standard Invoice Styles */
+.invoice-header {
+  border-bottom: 2px solid #333;
+  padding-bottom: 16px;
+}
+
+.company-name {
+  font-size: 18px;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 4px;
+}
+
+.company-address, .company-tax {
+  font-size: 11px;
+  color: #666;
+  margin: 2px 0;
+}
+
+.invoice-title {
+  font-size: 24px;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+}
+
+.invoice-meta p {
+  font-size: 11px;
+  margin: 2px 0;
+  color: #333;
+}
+
+.section-title {
+  font-size: 12px;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  border-bottom: 1px solid #ccc;
+  padding-bottom: 4px;
+}
+
+.customer-name {
+  font-size: 12px;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 4px;
+}
+
+.customer-address, .customer-tax {
+  font-size: 11px;
+  color: #666;
+  margin: 2px 0;
+}
+
+.outstanding-balance-section {
+  margin: 4px 0;
+}
+
+.outstanding-balance-box {
+  border: 1px solid #ddd;
+  border-radius: 2px;
+  padding: 4px 6px;
+  background-color: #fafafa;
+}
+
+.balance-info {
+  text-align: center;
+}
+
+.balance-info p {
+  margin: 1px 0;
+  font-size: 11px;
+}
+
+.balance-amount {
+  font-size: 10px !important;
+  font-weight: bold;
+  color: #dc3545;
+  margin: 2px 0 !important;
+}
+
+.balance-note {
+  font-size: 7px !important;
+  color: #999;
+  font-style: italic;
+}
+
+.invoice-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 16px 0;
+}
+
+.invoice-table th {
+  background-color: #f8f9fa;
+  border: 1px solid #dee2e6;
+  padding: 8px;
+  font-size: 11px;
+  font-weight: bold;
+  text-align: left;
+  text-transform: uppercase;
+}
+
+.invoice-table td {
+  border: 1px solid #dee2e6;
+  padding: 8px;
+  font-size: 11px;
+}
+
+.item-col { width: 40%; }
+.qty-col { width: 10%; text-align: center; }
+.price-col { width: 20%; text-align: right; }
+.tax-col { width: 15%; text-align: right; }
+.total-col { width: 15%; text-align: right; }
+
+/* Keep invoice headers aligned with body column alignment */
+.invoice-table th.item-col { text-align: left; }
+.invoice-table th.qty-col { text-align: center; }
+.invoice-table th.price-col,
+.invoice-table th.tax-col,
+.invoice-table th.total-col { text-align: right; }
+
+.totals-table {
+  border-collapse: collapse;
+  margin-left: auto;
+}
+
+.totals-table td {
+  padding: 4px 8px;
+  font-size: 11px;
+  border: none;
+}
+
+.totals-table .label {
+  text-align: right;
+  font-weight: normal;
+  color: #666;
+}
+
+.totals-table .amount {
+  text-align: right;
+  font-weight: bold;
+  color: #333;
+}
+
+.totals-table .total-row .label,
+.totals-table .total-row .amount {
+  font-size: 14px;
+  font-weight: bold;
+  border-top: 2px solid #333;
+  padding-top: 8px;
+}
+
+.section-subtitle {
+  font-size: 12px;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+}
+
+.payment-info p, .terms p {
+  font-size: 10px;
+  margin: 2px 0;
+  color: #666;
+}
+
+.invoice-footer {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #fff;
+  border-top: 2px solid #333;
+  padding: 16px;
+  margin-top: 32px;
+}
+
+.footer-content {
+  width: 100%;
+}
+
+.footer-message {
+  text-align: center;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #ccc;
+}
+
+.footer-message p {
+  font-size: 10px;
+  color: #666;
+  margin: 2px 0;
+}
+.a4-invoice-print table {
+  table-layout: fixed;
+  width: 100%;
+  border-collapse: collapse;
+  border: 1px solid #333;
+}
+.a4-invoice-print th, .a4-invoice-print td {
+  word-break: break-word;
+  overflow-wrap: break-word;
+  padding: 4px 6px;
+  font-size: 12px;
+  border: 1px solid #333;
+}
+@media print {
+  body { background: #fff !important; }
+  .a4-invoice-print { box-shadow: none !important; }
+  .a4-invoice-print tr, .a4-invoice-print table { page-break-inside: avoid; }
+}
+
+/* Custom animations for chat */
+@keyframes fade-in-out {
+  0% { opacity: 0; transform: translateY(10px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in-out {
+  animation: fade-in-out 0.3s ease-in-out;
+}
+
+/* Pulse animation for connection status */
+@keyframes pulse-green {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.animate-pulse-green {
+  animation: pulse-green 2s infinite;
+}
+
+/* Connection status indicator */
+.connection-indicator {
+  position: relative;
+}
+
+.connection-indicator::after {
+  content: '';
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: currentColor;
+  animation: pulse-green 2s infinite;
+}
