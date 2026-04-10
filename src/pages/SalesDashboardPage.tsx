@@ -113,6 +113,8 @@ const SalesDashboardPage: React.FC = () => {
     activeTeamLeaders: 0,
     checkedInTeamLeaders: 0,
     avgPerformance: 0,
+    totalHoreca: 0,
+    checkedInHoreca: 0,
   });
   const [planogramComplianceData, setPlanogramComplianceData] = useState<{ month: string; compliance: number }[]>([]);
   const [topReps, setTopReps] = useState<{ name: string; overall: number }[]>([]);
@@ -136,6 +138,14 @@ const SalesDashboardPage: React.FC = () => {
     route_name?: string; region_name?: string; checkInTime?: string; checkoutTime?: string;
   }>>([]);
   const [loadingActiveLeaders, setLoadingActiveLeaders] = useState(false);
+
+  // Checked-in Horeca modal
+  const [activeHorecaModalOpen, setActiveHorecaModalOpen] = useState(false);
+  const [activeHorecaReps, setActiveHorecaReps] = useState<Array<{
+    id: number; name: string; email?: string;
+    route_name?: string; region_name?: string; checkInTime?: string; checkoutTime?: string;
+  }>>([]);
+  const [loadingActiveHoreca, setLoadingActiveHoreca] = useState(false);
 
   const navigate = useNavigate();
 
@@ -261,6 +271,33 @@ const SalesDashboardPage: React.FC = () => {
     fetchActiveTeamLeaders();
   }, [fetchActiveTeamLeaders]);
 
+  /* ── checked-in horeca ── */
+  const fetchActiveHorecaReps = useCallback(async () => {
+    setLoadingActiveHoreca(true);
+    try {
+      const result = await fetchData('/dashboard/checked-in-sales-reps', { role: 'horeca' });
+      if (result.success && result.data) {
+        const reps = Array.isArray(result.data) ? result.data : [];
+        setActiveHorecaReps(
+          [...reps].sort((a: any, b: any) =>
+            new Date(a.checkInTime).getTime() - new Date(b.checkInTime).getTime()
+          )
+        );
+      } else {
+        setActiveHorecaReps([]);
+      }
+    } catch {
+      setActiveHorecaReps([]);
+    } finally {
+      setLoadingActiveHoreca(false);
+    }
+  }, [fetchData]);
+
+  const openActiveHorecaModal = useCallback(() => {
+    setActiveHorecaModalOpen(true);
+    fetchActiveHorecaReps();
+  }, [fetchActiveHorecaReps]);
+
   /* ── navigation ── */
   const navGroups = useMemo(() => [
     {
@@ -289,7 +326,7 @@ const SalesDashboardPage: React.FC = () => {
         //{ to: '/shared-performance', label: 'FMR Performance', icon: <TrendingUpIcon className="h-4 w-4" />, color: 'bg-rose-50 text-rose-700 border-rose-100 hover:bg-rose-100' },
         { to: '/overall-attendance', label: 'FMR Attendance Report', icon: <BarChart3Icon className="h-4 w-4" />, color: 'bg-violet-50 text-violet-700 border-violet-100 hover:bg-violet-100' },
         //{ to: '/dashboard/reports/product-performance', label: 'Product Perf.', icon: <PieChartIcon className="h-4 w-4" />, color: 'bg-cyan-50 text-cyan-700 border-cyan-100 hover:bg-cyan-100' },
-        { to: '/financial/customer-orders', label: 'Orders Report', icon: <FileTextIcon className="h-4 w-4" />, color: 'bg-red-50 text-red-700 border-red-100 hover:bg-red-100', badge: newOrdersCount },
+        { to: '/financial/customer-orders', label: 'Orders Report', icon: <FileTextIcon className="h-4 w-4" />, color: 'bg-red-50 text-red-700 border-red-100 hover:bg-red-100'},
         { to: '/returns', label: 'Product Returns', icon: <RotateCcwIcon className="h-4 w-4" />, color: 'bg-orange-50 text-orange-700 border-orange-100 hover:bg-orange-100' },
         { to: '/non-supplies', label: 'Non Supplies', icon: <RotateCcwIcon className="h-4 w-4" />, color: 'bg-red-50 text-red-700 border-red-100 hover:bg-red-100' },
         { to: '/notices', label: 'Notices', icon: <FileTextIcon className="h-4 w-4" />, color: 'bg-yellow-50 text-yellow-700 border-yellow-100 hover:bg-yellow-100' },
@@ -305,6 +342,10 @@ const SalesDashboardPage: React.FC = () => {
 
   const checkedInLeadersPct = stats.activeTeamLeaders > 0
     ? ((stats.checkedInTeamLeaders || 0) / stats.activeTeamLeaders * 100).toFixed(1)
+    : '0.0';
+
+  const checkedInHorecaPct = stats.totalHoreca > 0
+    ? ((stats.checkedInHoreca || 0) / stats.totalHoreca * 100).toFixed(1)
     : '0.0';
 
   /* ── loading / error ── */
@@ -365,13 +406,13 @@ const SalesDashboardPage: React.FC = () => {
       <div className="w-full px-3 sm:px-4 lg:px-6 py-3 sm:py-4 space-y-4 sm:space-y-5">
 
         {/* ── Stat Cards ── */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3">
+        <div className="grid grid-cols-2 lg:grid-cols-5 gap-2 sm:gap-3">
           <StatCard
             title="Outlets Visited"
             value={Number(stats.outletsVisitedThisMonth || 0).toLocaleString()}
             icon={<MapPinIcon className="h-4 w-4 text-white" />}
             gradient="bg-gradient-to-br from-emerald-500 to-emerald-700"
-            onClick={() => navigate('/visits')}
+            onClick={() => navigate('/dashboard/reports/outlet-visits')}
             subText="This month"
           />
           <StatCard
@@ -389,6 +430,14 @@ const SalesDashboardPage: React.FC = () => {
             suffix={`${checkedInPct}% of active FMRs`}
             gradient="bg-gradient-to-br from-purple-500 to-purple-700"
             onClick={openActiveRepsModal}
+          />
+          <StatCard
+            title="Checked-In Horeca"
+            value={`${stats.checkedInHoreca || 0} / ${stats.totalHoreca || 0}`}
+            icon={<UsersIcon className="h-4 w-4 text-white" />}
+            suffix={`${checkedInHorecaPct}% of active Horeca`}
+            gradient="bg-gradient-to-br from-rose-500 to-rose-700"
+            onClick={openActiveHorecaModal}
           />
           <StatCard
             title="Avg Performance"
@@ -722,7 +771,7 @@ const SalesDashboardPage: React.FC = () => {
                 <p className="text-[10px] sm:text-xs text-gray-400 mt-0.5">Overall performance score</p>
               </div>
               <button
-                onClick={() => navigate('/shared-performance')}
+                onClick={() => navigate('/outlet-coverage')}
                 className="flex items-center gap-1 text-[10px] sm:text-xs font-medium text-orange-600 hover:text-orange-800 bg-orange-50 hover:bg-orange-100 px-2 sm:px-2.5 py-1 sm:py-1.5 rounded-lg transition-colors self-start sm:self-auto"
               >
                 Details <ChevronRightIcon className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
@@ -1039,6 +1088,146 @@ const SalesDashboardPage: React.FC = () => {
                 >
                   Close
                 </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ──────────── Checked-In Horeca Modal ──────────── */}
+      {activeHorecaModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-2 sm:p-4">
+          <div className="bg-white rounded-xl sm:rounded-2xl shadow-2xl w-full max-w-4xl flex flex-col overflow-hidden" style={{ maxHeight: '95vh' }}>
+
+            {/* Header */}
+            <div className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 bg-gradient-to-r from-rose-600 to-pink-600 flex-shrink-0">
+              <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
+                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg sm:rounded-xl bg-white/20 flex items-center justify-center flex-shrink-0">
+                  <UsersIcon className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <h2 className="text-xs sm:text-sm font-bold text-white truncate">Checked-In Horeca</h2>
+                  <p className="text-[9px] sm:text-[10px] text-rose-200 truncate">
+                    {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setActiveHorecaModalOpen(false)}
+                className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg sm:rounded-xl bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors flex-shrink-0 ml-2"
+              >
+                <X className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-white" />
+              </button>
+            </div>
+
+            {/* Summary strip */}
+            <div className="flex items-center justify-between px-4 sm:px-6 py-2.5 sm:py-3 bg-rose-50 border-b border-rose-100 flex-shrink-0">
+              <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+                <span className="text-sm sm:text-base font-bold text-rose-800 leading-none">{activeHorecaReps.length}</span>
+                <span className="text-[10px] sm:text-xs text-rose-600">Horeca checked in today</span>
+                {stats.totalHoreca > 0 && (
+                  <span className="px-1.5 sm:px-2 py-0.5 bg-rose-200 text-rose-800 text-[9px] sm:text-[10px] font-bold rounded-full">
+                    {checkedInHorecaPct}% attendance
+                  </span>
+                )}
+              </div>
+            </div>
+
+            {/* Body */}
+            <div className="overflow-y-auto flex-1 p-2 sm:p-0">
+              {loadingActiveHoreca ? (
+                <div className="flex flex-col items-center justify-center py-16 text-gray-400">
+                  <div className="animate-spin rounded-full h-10 w-10 border-2 border-rose-500 border-t-transparent mb-4" />
+                  <p className="text-xs sm:text-sm">Loading checked-in Horeca...</p>
+                </div>
+              ) : activeHorecaReps.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-16 text-gray-400">
+                  <AlertCircleIcon className="h-10 w-10 mb-3 opacity-40" />
+                  <p className="text-xs sm:text-sm font-medium">No Horeca have checked in today</p>
+                </div>
+              ) : (
+                <div className="overflow-x-auto -mx-2 sm:mx-0">
+                  <table className="min-w-full">
+                    <thead className="bg-gray-50 sticky top-0 z-10">
+                      <tr>
+                        {['#', 'Name', 'Check-In', 'Check-Out', 'Time Spent', 'Route', 'Region'].map(h => (
+                          <th key={h} className="px-2 sm:px-4 py-2 sm:py-3 text-left text-[9px] sm:text-[10px] font-bold text-gray-500 uppercase tracking-wider whitespace-nowrap">{h}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100">
+                      {activeHorecaReps.map((rep, idx) => {
+                        const checkInTime = rep.checkInTime
+                          ? new Date(rep.checkInTime).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })
+                          : '—';
+                        const checkoutTime = rep.checkoutTime
+                          ? new Date(rep.checkoutTime).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })
+                          : '—';
+                        const isEarly = rep.checkInTime
+                          ? new Date(rep.checkInTime).getHours() < 8
+                          : false;
+
+                        let timeSpent = '—';
+                        if (rep.checkInTime && rep.checkoutTime) {
+                          const checkIn = new Date(rep.checkInTime);
+                          const checkout = new Date(rep.checkoutTime);
+                          const diffMs = checkout.getTime() - checkIn.getTime();
+                          const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+                          const diffMinutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+                          timeSpent = diffHours > 0 ? `${diffHours}h ${diffMinutes}m` : `${diffMinutes}m`;
+                        } else if (rep.checkInTime) {
+                          const checkIn = new Date(rep.checkInTime);
+                          const now = new Date();
+                          const diffMs = now.getTime() - checkIn.getTime();
+                          const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+                          const diffMinutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+                          timeSpent = diffHours > 0 ? `${diffHours}h ${diffMinutes}m` : `${diffMinutes}m`;
+                        }
+
+                        return (
+                          <tr key={rep.id} className="hover:bg-rose-50/50 transition-colors">
+                            <td className="px-2 sm:px-4 py-2 sm:py-3 text-[10px] sm:text-xs text-gray-400 font-medium w-6 sm:w-8">{idx + 1}</td>
+                            <td className="px-2 sm:px-4 py-2 sm:py-3">
+                              <div className="flex items-center gap-1.5 sm:gap-2">
+                                <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-rose-100 flex items-center justify-center text-rose-700 text-[9px] sm:text-[10px] font-bold flex-shrink-0">
+                                  {rep.name.charAt(0).toUpperCase()}
+                                </div>
+                                <span className="text-[10px] sm:text-xs text-gray-800 font-medium truncate max-w-[100px] sm:max-w-none">{rep.name}</span>
+                              </div>
+                            </td>
+                            <td className="px-2 sm:px-4 py-2 sm:py-3">
+                              <span className={`text-[10px] sm:text-xs font-semibold ${isEarly ? 'text-emerald-600' : 'text-orange-500'}`}>
+                                {checkInTime}
+                              </span>
+                            </td>
+                            <td className="px-2 sm:px-4 py-2 sm:py-3">
+                              <span className="text-[10px] sm:text-xs font-semibold text-gray-600">
+                                {checkoutTime}
+                              </span>
+                            </td>
+                            <td className="px-2 sm:px-4 py-2 sm:py-3">
+                              <span className="text-[10px] sm:text-xs font-medium text-blue-600">
+                                {timeSpent}
+                              </span>
+                            </td>
+                            <td className="px-2 sm:px-4 py-2 sm:py-3 text-[10px] sm:text-xs text-gray-600 truncate max-w-[80px] sm:max-w-none">{rep.route_name || '—'}</td>
+                            <td className="px-2 sm:px-4 py-2 sm:py-3 text-[10px] sm:text-xs text-gray-600 truncate max-w-[80px] sm:max-w-none">{rep.region_name || '—'}</td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+
+            {/* Footer */}
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-2 sm:gap-0 px-4 sm:px-6 py-3 sm:py-4 bg-gray-50 border-t border-gray-100 flex-shrink-0">
+              <button
+                onClick={() => setActiveHorecaModalOpen(false)}
+                className="px-4 sm:px-5 py-2 sm:py-2.5 text-[10px] sm:text-xs font-semibold text-white bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-700 hover:to-pink-700 rounded-lg sm:rounded-xl transition-all shadow-sm"
+              >
+                Close
+              </button>
             </div>
           </div>
         </div>

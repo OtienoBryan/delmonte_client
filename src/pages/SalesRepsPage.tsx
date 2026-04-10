@@ -25,7 +25,7 @@ const SalesRepModal: React.FC<SalesRepModalProps> = ({
     name: '',
     email: '',
     phoneNumber: '',
-    country: '',
+    country: 'Kenya',
     region: '',
     route_name_update: '',
     photoUrl: '',
@@ -78,7 +78,7 @@ const SalesRepModal: React.FC<SalesRepModalProps> = ({
         name: '',
         email: '',
         phoneNumber: '',
-        country: '',
+        country: 'Kenya',
         region: '',
         route_name_update: '',
         photoUrl: '',
@@ -124,10 +124,9 @@ const SalesRepModal: React.FC<SalesRepModalProps> = ({
             />
           </div>
           <div>
-            <label className="block text-[10px] font-medium text-gray-700 mb-1.5">Email *</label>
+            <label className="block text-[10px] font-medium text-gray-700 mb-1.5">Email</label>
             <input
               type="email"
-              required
               value={formData.email}
               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
               className="block w-full border border-gray-300 rounded-lg px-2 py-1 text-[10px] focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -230,6 +229,7 @@ const SalesRepModal: React.FC<SalesRepModalProps> = ({
             >
               <option value="sales rep">Sales Rep</option>
               <option value="team leader">Team Leader</option>
+              <option value="horeca">Horeca</option>
             </select>
           </div>
           <div>
@@ -594,6 +594,9 @@ const SalesRepsPage: React.FC = () => {
   const [selectedRole, setSelectedRole] = useState<string>('');
   const [pendingRole, setPendingRole] = useState<string>('');
 
+  // Search state
+  const [searchQuery, setSearchQuery] = useState<string>('');
+
   const isTeamLeaderRow = (rep?: SalesRep) => (rep?.role || '')
     .toLowerCase()
     .trim() === 'team leader';
@@ -601,7 +604,7 @@ const SalesRepsPage: React.FC = () => {
   // 2. Reset to page 1 when filters change
   useEffect(() => {
     setCurrentPage(1);
-  }, [selectedCountry, selectedRegion, selectedRoute, selectedTeamLeader, selectedStatus, selectedRole, salesReps]);
+  }, [selectedCountry, selectedRegion, selectedRoute, selectedTeamLeader, selectedStatus, selectedRole, searchQuery, salesReps]);
 
   // 3. Reset to page 1 when repsPerPage changes
   useEffect(() => {
@@ -614,7 +617,7 @@ const SalesRepsPage: React.FC = () => {
     setCurrentPage(1);
   }, [teamLeaderUserId, teamLeaderMappingLoading]);
 
-  // 2. Update filter logic to include status and role
+  // 2. Update filter logic to include status, role, and search
   const filteredSalesReps = salesReps.filter(rep => {
     const statusMatch = selectedStatus !== '' ? String(rep.status ?? 1) === selectedStatus : true;
     const countryMatch = selectedCountry ? rep.country === selectedCountry : true;
@@ -627,7 +630,15 @@ const SalesRepsPage: React.FC = () => {
         : (salesRepTeamLeaders[rep.id] || []).some(tl => String(tl.id) === String(effectiveTeamLeaderId)))
       : true;
     const roleMatch = selectedRole ? (rep.role || 'sales rep') === selectedRole : true;
-    return statusMatch && countryMatch && regionMatch && routeMatch && teamLeaderMatch && roleMatch;
+    const q = searchQuery.toLowerCase().trim();
+    const searchMatch = q
+      ? (rep.name || '').toLowerCase().includes(q) ||
+        (rep.email || '').toLowerCase().includes(q) ||
+        (rep.phoneNumber || '').toLowerCase().includes(q) ||
+        (rep.region || '').toLowerCase().includes(q) ||
+        (rep.route_name_update || '').toLowerCase().includes(q)
+      : true;
+    return statusMatch && countryMatch && regionMatch && routeMatch && teamLeaderMatch && roleMatch && searchMatch;
   });
 
   // 3. Paginate filtered sales reps
@@ -1005,6 +1016,18 @@ const SalesRepsPage: React.FC = () => {
           >
             Sales Rep Working Days
           </Link>
+          <div className="relative">
+            <svg className="absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-4.35-4.35M17 11A6 6 0 1 0 5 11a6 6 0 0 0 12 0z" />
+            </svg>
+            <input
+              type="text"
+              placeholder="Search by name, email, phone..."
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+              className="pl-6 pr-2 py-1 text-[10px] border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 w-48"
+            />
+          </div>
           <button
             onClick={openFilterModal}
             className="inline-flex items-center px-2.5 py-1 text-[10px] bg-gray-100 text-gray-800 font-medium rounded-lg shadow hover:bg-gray-200 transition-colors"
@@ -1469,6 +1492,7 @@ const SalesRepsPage: React.FC = () => {
                     <option value="">All Roles</option>
                     <option value="sales rep">Sales Rep</option>
                     <option value="team leader">Team Leader</option>
+                    <option value="horeca">Horeca</option>
                   </select>
                 </div>
               </div>
