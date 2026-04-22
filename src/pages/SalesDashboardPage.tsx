@@ -444,7 +444,7 @@ const SalesDashboardPage: React.FC = () => {
             value={`${stats.avgPerformance}%`}
             icon={<TrendingUpIcon className="h-5 w-5 text-white" />}
             gradient="bg-gradient-to-br from-orange-500 to-orange-700"
-            onClick={() => navigate('/shared-performance')}
+            onClick={() => navigate('/outlet-coverage')}
             subText="Overall score"
           />
         </div>
