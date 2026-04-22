@@ -358,7 +358,7 @@ const AssignTeamLeaderModal: React.FC<{
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-xl shadow-2xl w-full max-w-md max-h-[90vh] flex flex-col">
-        <div className="px-4 py-3 border-b border-gray-200 flex items-center justify-between">
+        {/* <div className="px-4 py-3 border-b border-gray-200 flex items-center justify-between">
           <h2 className="text-sm font-bold text-gray-900">
             Assign Team Leader {salesRepName && `to ${salesRepName}`}
           </h2>
@@ -370,7 +370,7 @@ const AssignTeamLeaderModal: React.FC<{
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
-        </div>
+        </div> */}
         {loading ? (
           <div className="p-8 text-center">
             <div className="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
@@ -1225,7 +1225,7 @@ const SalesRepsPage: React.FC = () => {
                           >
                             Edit
                           </button>
-                          {!isTeamLeaderUser && !isTeamLeaderRow(rep) && (
+                          {/* {!isTeamLeaderUser && !isTeamLeaderRow(rep) && (
                             <button
                               onClick={() => {
                                 setSelectedSalesRepForTeamLeader({ id: rep.id, name: rep.name });
@@ -1235,7 +1235,7 @@ const SalesRepsPage: React.FC = () => {
                             >
                               Assign Team Leader
                             </button>
-                          )}
+                          )} */}
                           <button
                             onClick={() => handleDelete(rep.id)}
                             disabled={isTeamLeaderUser || isTeamLeaderRow(rep)}
