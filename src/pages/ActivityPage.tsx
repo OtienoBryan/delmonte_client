@@ -160,7 +160,7 @@ const ActivityPage: React.FC = () => {
               </select>
             </div>
             <div>
-              <label className="block text-[10px] font-medium text-gray-700 mb-1">Role</label>
+              <label className="block text-[10px] font-medium text-gray-700 mb-1">Roles</label>
               <select
                 value={roleFilter}
                 onChange={e => setRoleFilter(e.target.value)}
