@@ -15,6 +15,9 @@ export interface PriceComplianceReport {
   date: string;
   appoint_id: number;
   outletName?: string;
+  regionName?: string;
+  outletTypeName?: string;
+  outletAccountName?: string;
   salesRepName?: string;
 }
 

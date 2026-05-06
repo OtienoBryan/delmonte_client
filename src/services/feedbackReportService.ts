@@ -6,6 +6,9 @@ export interface FeedbackReport {
   outlet: string;
   country: string;
   salesRep: string;
+  regionName?: string;
+  outletTypeName?: string;
+  outletAccountName?: string;
   comment: string;
   createdAt: string;
 }

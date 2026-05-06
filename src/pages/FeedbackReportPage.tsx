@@ -665,6 +665,15 @@ const FeedbackReportPage: React.FC = () => {
                     Outlet
                   </th>
                   <th className="px-3 py-2 text-left text-[10px] font-medium text-gray-500 uppercase tracking-wider">
+                    Region
+                  </th>
+                  <th className="px-3 py-2 text-left text-[10px] font-medium text-gray-500 uppercase tracking-wider">
+                    Outlet Type
+                  </th>
+                  <th className="px-3 py-2 text-left text-[10px] font-medium text-gray-500 uppercase tracking-wider">
+                    Outlet Account
+                  </th>
+                  <th className="px-3 py-2 text-left text-[10px] font-medium text-gray-500 uppercase tracking-wider">
                     Country
                   </th>
                   <th className="px-3 py-2 text-left text-[10px] font-medium text-gray-500 uppercase tracking-wider">
@@ -684,6 +693,15 @@ const FeedbackReportPage: React.FC = () => {
                   <tr key={report.id} className="hover:bg-gray-50">
                     <td className="px-3 py-2 whitespace-nowrap">
                       <div className="text-[10px] font-medium text-gray-900">{report.outlet || 'N/A'}</div>
+                    </td>
+                    <td className="px-3 py-2 whitespace-nowrap">
+                      <div className="text-[10px] text-gray-900">{report.regionName || '—'}</div>
+                    </td>
+                    <td className="px-3 py-2 whitespace-nowrap">
+                      <div className="text-[10px] text-gray-900">{report.outletTypeName || '—'}</div>
+                    </td>
+                    <td className="px-3 py-2 whitespace-nowrap">
+                      <div className="text-[10px] text-gray-900">{report.outletAccountName || '—'}</div>
                     </td>
                     <td className="px-3 py-2 whitespace-nowrap">
                       <div className="text-[10px] text-gray-900">{report.country || 'N/A'}</div>

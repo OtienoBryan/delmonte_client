@@ -551,6 +551,12 @@ const ShortExpiryReportPage: React.FC = () => {
                         Outlet
                       </th>
                       <th className="px-3 py-2 text-left text-[10px] font-medium text-gray-500 uppercase tracking-wider">
+                        Outlet Type
+                      </th>
+                      <th className="px-3 py-2 text-left text-[10px] font-medium text-gray-500 uppercase tracking-wider">
+                        Outlet Account
+                      </th>
+                      <th className="px-3 py-2 text-left text-[10px] font-medium text-gray-500 uppercase tracking-wider">
                         Sales Rep
                       </th>
                       <th className="px-3 py-2 text-left text-[10px] font-medium text-gray-500 uppercase tracking-wider">
@@ -594,6 +600,12 @@ const ShortExpiryReportPage: React.FC = () => {
                               {report.outletName || 'N/A'}
                             </span>
                           </div>
+                        </td>
+                        <td className="px-3 py-2 whitespace-nowrap">
+                          <span className="text-[10px] text-gray-900">{report.outletTypeName || '—'}</span>
+                        </td>
+                        <td className="px-3 py-2 whitespace-nowrap">
+                          <span className="text-[10px] text-gray-900">{report.outletAccountName || '—'}</span>
                         </td>
                         <td className="px-3 py-2 whitespace-nowrap">
                           <div className="flex items-center">

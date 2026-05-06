@@ -16,7 +16,8 @@ import {
   Save,
   Truck,
   Home,
-  ArrowLeft
+  ArrowLeft,
+  List
 } from 'lucide-react';
 import axios from 'axios';
 import { salesOrdersService, productsService } from '../services/financialService';
@@ -1016,6 +1017,14 @@ const CustomerOrdersPage: React.FC = () => {
                 <span>Home</span>
               </button>
               <button
+                onClick={() => navigate('/financial/customer-order-items')}
+                className="px-3 py-1.5 text-xs bg-white text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors flex items-center space-x-1.5"
+                title="View all ordered items"
+              >
+                <List className="h-3.5 w-3.5" />
+                <span>All Items</span>
+              </button>
+              <button
                 onClick={() => navigate('/financial/create-customer-order')}
                 className="px-3 py-1.5 text-xs bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 transition-colors flex items-center space-x-1.5"
               >
@@ -1239,25 +1248,22 @@ const CustomerOrdersPage: React.FC = () => {
                       Order Details
                     </th>
                     <th className="px-4 py-2 text-left text-[9px] font-medium text-gray-500 uppercase tracking-wider">
-                      LPO #
+                      Customer
                     </th>
                     <th className="px-4 py-2 text-left text-[9px] font-medium text-gray-500 uppercase tracking-wider">
-                      Customer
+                      Region
+                    </th>
+                    <th className="px-4 py-2 text-left text-[9px] font-medium text-gray-500 uppercase tracking-wider">
+                      Outlet Type
+                    </th>
+                    <th className="px-4 py-2 text-left text-[9px] font-medium text-gray-500 uppercase tracking-wider">
+                      Outlet Account
                     </th>
                     <th className="px-4 py-2 text-left text-[9px] font-medium text-gray-500 uppercase tracking-wider">
                       FMR
                     </th>
                     <th className="px-4 py-2 text-left text-[9px] font-medium text-gray-500 uppercase tracking-wider">
                       Date
-                    </th>
-                    <th className="px-4 py-2 text-right text-[9px] font-medium text-gray-500 uppercase tracking-wider">
-                      Sub Total
-                    </th>
-                    <th className="px-4 py-2 text-right text-[9px] font-medium text-gray-500 uppercase tracking-wider">
-                      Tax Amount
-                    </th>
-                    <th className="px-4 py-2 text-right text-[9px] font-medium text-gray-500 uppercase tracking-wider">
-                      Total Amount
                     </th>
                     <th className="px-2 py-2 text-left text-[9px] font-medium text-gray-500 uppercase tracking-wider w-32">
                       Actions
@@ -1279,13 +1285,6 @@ const CustomerOrdersPage: React.FC = () => {
                         </div>
                       </td>
                       <td className="px-4 py-2 whitespace-nowrap">
-                        <div className="text-[10px] text-gray-900">
-                          {order.lpo_number != null && String(order.lpo_number).trim() !== ''
-                            ? order.lpo_number
-                            : '—'}
-                        </div>
-                      </td>
-                      <td className="px-4 py-2 whitespace-nowrap">
                         <div className="flex items-center">
                            
                           <div className="ml-2">
@@ -1294,6 +1293,21 @@ const CustomerOrdersPage: React.FC = () => {
                             </div>
                             
                           </div>
+                        </div>
+                      </td>
+                      <td className="px-4 py-2 whitespace-nowrap">
+                        <div className="text-[10px] text-gray-900">
+                          {order.region_name || '—'}
+                        </div>
+                      </td>
+                      <td className="px-4 py-2 whitespace-nowrap">
+                        <div className="text-[10px] text-gray-900">
+                          {order.client_type_name || '—'}
+                        </div>
+                      </td>
+                      <td className="px-4 py-2 whitespace-nowrap">
+                        <div className="text-[10px] text-gray-900">
+                          {order.outlet_account_name || '—'}
                         </div>
                       </td>
                       <td className="px-4 py-2 whitespace-nowrap">
@@ -1311,21 +1325,6 @@ const CustomerOrdersPage: React.FC = () => {
                           <div className="text-[10px] text-gray-900">
                             {formatDate(order.order_date)}
                           </div>
-                        </div>
-                      </td>
-                      <td className="px-4 py-2 whitespace-nowrap text-right">
-                        <div className="text-[10px] text-gray-900">
-                          {formatCurrency(Number(order.subtotal) || 0)}
-                        </div>
-                      </td>
-                      <td className="px-4 py-2 whitespace-nowrap text-right">
-                        <div className="text-[10px] text-gray-900">
-                          {formatCurrency(Number(order.tax_amount) || 0)}
-                        </div>
-                      </td>
-                      <td className="px-4 py-2 whitespace-nowrap text-right">
-                        <div className="text-[10px] font-medium text-gray-900">
-                          {formatCurrency(Number(order.total_amount) || 0)}
                         </div>
                       </td>
                       <td className="px-2 py-2 text-[10px] font-medium">
@@ -1963,39 +1962,8 @@ const CustomerOrdersPage: React.FC = () => {
                         className="w-full px-2 py-1.5 text-xs border border-gray-300 rounded-md bg-gray-100 text-gray-500"
                       />
                     </div>
-                    <div>
-                      <label className="block text-[10px] font-medium text-gray-700 mb-1">
-                        Sub Total
-                      </label>
-                      <input
-                        type="text"
-                        value={formatCurrency(Number(selectedOrder.subtotal) || 0)}
-                        disabled
-                        className="w-full px-2 py-1.5 text-xs border border-gray-300 rounded-md bg-gray-100 text-gray-500"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-[10px] font-medium text-gray-700 mb-1">
-                        Tax Amount
-                      </label>
-                      <input
-                        type="text"
-                        value={formatCurrency(Number(selectedOrder.tax_amount) || 0)}
-                        disabled
-                        className="w-full px-2 py-1.5 text-xs border border-gray-300 rounded-md bg-gray-100 text-gray-500"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-[10px] font-medium text-gray-700 mb-1">
-                        Total Amount
-                      </label>
-                      <input
-                        type="text"
-                        value={formatCurrency(Number(selectedOrder.total_amount) || 0)}
-                        disabled
-                        className="w-full px-2 py-1.5 text-xs border border-gray-300 rounded-md bg-gray-100 text-gray-500"
-                      />
-                    </div>
+                     
+                     
                   </div>
                 </div>
 
@@ -2013,15 +1981,6 @@ const CustomerOrdersPage: React.FC = () => {
                             <th className="px-3 py-1.5 text-right text-[10px] font-medium text-gray-500 uppercase w-16">
                               Qty
                             </th>
-                            <th className="px-3 py-1.5 text-right text-[10px] font-medium text-gray-500 uppercase">
-                              Unit Price
-                            </th>
-                            <th className="px-3 py-1.5 text-right text-[10px] font-medium text-gray-500 uppercase">
-                              Tax Amount
-                            </th>
-                            <th className="px-3 py-1.5 text-right text-[10px] font-medium text-gray-500 uppercase">
-                              Total Price
-                            </th>
                           </tr>
                         </thead>
                         <tbody className="bg-white divide-y divide-gray-100">
@@ -2037,15 +1996,6 @@ const CustomerOrdersPage: React.FC = () => {
                                 </td>
                                 <td className="px-3 py-1.5 text-[10px] text-gray-900 text-right">
                                   {item.quantity}
-                                </td>
-                                <td className="px-3 py-1.5 text-[10px] text-gray-900 text-right">
-                                  {formatCurrency(Number(item.unit_price) || 0)}
-                                </td>
-                                <td className="px-3 py-1.5 text-[10px] text-gray-900 text-right">
-                                  {formatCurrency(Number(item.tax_amount) || 0)}
-                                </td>
-                                <td className="px-3 py-1.5 text-[10px] font-medium text-gray-900 text-right">
-                                  {formatCurrency(Number(item.total_price) || 0)}
                                 </td>
                               </tr>
                           );

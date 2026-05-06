@@ -142,6 +142,8 @@ export interface User {
     country_name?: string;
     region_id?: number;
     region_name?: string;
+    client_type_name?: string;
+    outlet_account_name?: string;
     rider_name?: string;
     rider_contact?: string;
     assigned_at?: string;

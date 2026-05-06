@@ -14,6 +14,9 @@ export interface CompetitorActivityReport {
   reportId: number | null;
   competitor_company?: string;
   outletName?: string;
+  regionName?: string;
+  outletTypeName?: string;
+  outletAccountName?: string;
   merchandiserName?: string;
 }
 

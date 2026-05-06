@@ -15,6 +15,9 @@ export interface PromotionsReport {
   comment: string;
   created_at: string;
   outletName?: string;
+  regionName?: string;
+  outletTypeName?: string;
+  outletAccountName?: string;
   salesRepName?: string;
 }
 

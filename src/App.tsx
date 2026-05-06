@@ -29,6 +29,7 @@ import PurchaseOrdersPage from './pages/PurchaseOrdersPage';
 import PurchaseOrderDetailsPage from './pages/PurchaseOrderDetailsPage';
 import CreateCustomerOrderPage from './pages/CreateCustomerOrderPage';
 import CustomerOrdersPage from './pages/CustomerOrdersPage';
+import CustomerOrderItemsPage from './pages/CustomerOrderItemsPage';
 import ReceiveItemsPage from './pages/ReceiveItemsPage';
 import StoreInventoryPage from './pages/StoreInventoryPage';
 import UpdateStockQuantityPage from './pages/UpdateStockQuantityPage';
@@ -346,6 +347,7 @@ const App = () => {
 <Route path="/financial/purchase-order" element={<PurchaseOrderPage />} />
             <Route path="/financial/create-customer-order" element={<CreateCustomerOrderPage />} />
             <Route path="/financial/customer-orders" element={<CustomerOrdersPage />} />
+            <Route path="/financial/customer-order-items" element={<CustomerOrderItemsPage />} />
             <Route path="/financial/post-receipt" element={<PostReceiptPage />} />
             <Route path="/financial/view-receipts" element={<ViewReceiptsPage />} />
             <Route path="/financial/suppliers" element={<SuppliersManagementPage />} />

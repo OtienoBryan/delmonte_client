@@ -280,6 +280,9 @@ const PromotionsReportPage: React.FC = () => {
                   <thead className="bg-gray-50">
                     <tr>
                       <th className="px-3 py-2 text-left text-[10px] font-medium text-gray-500 uppercase">Outlet</th>
+                      <th className="px-3 py-2 text-left text-[10px] font-medium text-gray-500 uppercase">Region</th>
+                      <th className="px-3 py-2 text-left text-[10px] font-medium text-gray-500 uppercase">Outlet Type</th>
+                      <th className="px-3 py-2 text-left text-[10px] font-medium text-gray-500 uppercase">Outlet Account</th>
                       <th className="px-3 py-2 text-left text-[10px] font-medium text-gray-500 uppercase">Sales Rep</th>
                       <th className="px-3 py-2 text-left text-[10px] font-medium text-gray-500 uppercase">Product</th>
                       <th className="px-3 py-2 text-left text-[10px] font-medium text-gray-500 uppercase">Activation</th>
@@ -298,6 +301,15 @@ const PromotionsReportPage: React.FC = () => {
                             <Building2 className="h-3 w-3 text-gray-400 mr-1.5" />
                             {report.outletName || report.outlet_id || 'N/A'}
                           </div>
+                        </td>
+                        <td className="px-3 py-2 whitespace-nowrap text-[10px] text-gray-900">
+                          {report.regionName || '—'}
+                        </td>
+                        <td className="px-3 py-2 whitespace-nowrap text-[10px] text-gray-900">
+                          {report.outletTypeName || '—'}
+                        </td>
+                        <td className="px-3 py-2 whitespace-nowrap text-[10px] text-gray-900">
+                          {report.outletAccountName || '—'}
                         </td>
                         <td className="px-3 py-2 whitespace-nowrap text-[10px] text-gray-900">
                           <div className="flex items-center">

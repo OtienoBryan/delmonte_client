@@ -15,6 +15,8 @@ export interface SosReport {
   date: string;
   outletName?: string;
   repName?: string;
+  regionName?: string;
+  outletTypeName?: string;
   outletAccountName?: string;
 }
 

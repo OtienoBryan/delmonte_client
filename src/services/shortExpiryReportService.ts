@@ -13,6 +13,8 @@ export interface ShortExpiryReport {
   outlet_id: number;
   outletName?: string;
   regionName?: string;
+  outletTypeName?: string;
+  outletAccountName?: string;
   salesRepName?: string;
   comment?: string;
   productSku?: string | null;

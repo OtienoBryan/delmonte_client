@@ -6,6 +6,9 @@ export interface MyVisibilityReport {
   outletName?: string;
   companyName?: string;
   country?: string;
+  regionName?: string;
+  outletTypeName?: string;
+  outletAccountName?: string;
   salesRep?: string;
   comment: string;
   imageUrl: string;

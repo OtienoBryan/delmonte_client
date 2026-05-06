@@ -401,6 +401,9 @@ const AvailabilityReportPage: React.FC = () => {
           clientId: report.clientId,
           clientName: clientNameKey,
           countryName: (report.countryName || '').trim(),
+          regionName: (report.regionName || '').trim(),
+          outletTypeName: (report.outletTypeName || '').trim(),
+          outletAccountName: (report.outletAccountName || '').trim(),
           salesRepName: (report.salesRepName || '').trim(),
           reportDate: dateKey,
           createdAt: report.createdAt,
@@ -606,6 +609,15 @@ const AvailabilityReportPage: React.FC = () => {
                       <th className="px-2 py-1 text-left text-xs font-medium text-gray-500 uppercase sticky left-0 bg-gray-100 z-10 min-w-[140px] border-r border-gray-300">
                         Outlet
                       </th>
+                      <th className="px-2 py-1 text-left text-xs font-medium text-gray-500 uppercase bg-gray-100 min-w-[100px]">
+                        Region
+                      </th>
+                      <th className="px-2 py-1 text-left text-xs font-medium text-gray-500 uppercase bg-gray-100 min-w-[110px]">
+                        Outlet Type
+                      </th>
+                      <th className="px-2 py-1 text-left text-xs font-medium text-gray-500 uppercase bg-gray-100 min-w-[120px]">
+                        Outlet Account
+                      </th>
                       <th className="px-2 py-1 text-left text-xs font-medium text-gray-500 uppercase bg-gray-100 min-w-[90px]">
                         Sales Rep
                       </th>
@@ -633,6 +645,15 @@ const AvailabilityReportPage: React.FC = () => {
                       <tr key={outlet.key} className="hover:bg-gray-50">
                         <td className="px-2 py-1.5 whitespace-nowrap text-xs font-medium text-gray-900 sticky left-0 bg-white hover:bg-gray-50 z-10 border-r border-gray-300">
                           {outlet.clientName}
+                        </td>
+                        <td className="px-2 py-1.5 whitespace-nowrap text-xs text-gray-700">
+                          {outlet.regionName || '—'}
+                        </td>
+                        <td className="px-2 py-1.5 whitespace-nowrap text-xs text-gray-700">
+                          {outlet.outletTypeName || '—'}
+                        </td>
+                        <td className="px-2 py-1.5 whitespace-nowrap text-xs text-gray-700">
+                          {outlet.outletAccountName || '—'}
                         </td>
                         <td className="px-2 py-1.5 whitespace-nowrap text-xs text-gray-700">
                           {outlet.salesRepName}
