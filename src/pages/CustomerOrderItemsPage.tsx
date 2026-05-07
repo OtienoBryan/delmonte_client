@@ -9,6 +9,9 @@ type OrderItemRow = {
   so_number: string;
   client_id: number;
   customer_name: string | null;
+  region_name: string | null;
+  outlet_type_name: string | null;
+  outlet_account_name: string | null;
   order_date: string | null;
   created_at: string | null;
   my_status: number | null;
@@ -51,10 +54,13 @@ const CustomerOrderItemsPage: React.FC = () => {
       return /[",\n\r]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
     };
 
-    const headers = ['Order #', 'Customer', 'Product', 'Qty', 'Date'];
+    const headers = ['Order #', 'Customer', 'Region', 'Outlet Type', 'Outlet Account', 'Product', 'Qty', 'Date'];
     const lines = rows.map((r) => [
       escape(r.so_number),
       escape(r.customer_name || ''),
+      escape(r.region_name || ''),
+      escape(r.outlet_type_name || ''),
+      escape(r.outlet_account_name || ''),
       escape(r.product_name || r.product_id),
       escape(r.quantity),
       escape(r.order_date || r.created_at || '')
@@ -285,6 +291,15 @@ const CustomerOrderItemsPage: React.FC = () => {
                       Customer
                     </th>
                     <th className="px-4 py-2 text-left text-[9px] font-medium text-gray-500 uppercase tracking-wider">
+                      Region
+                    </th>
+                    <th className="px-4 py-2 text-left text-[9px] font-medium text-gray-500 uppercase tracking-wider">
+                      Outlet Type
+                    </th>
+                    <th className="px-4 py-2 text-left text-[9px] font-medium text-gray-500 uppercase tracking-wider">
+                      Outlet Account
+                    </th>
+                    <th className="px-4 py-2 text-left text-[9px] font-medium text-gray-500 uppercase tracking-wider">
                       Product
                     </th>
                     <th className="px-4 py-2 text-right text-[9px] font-medium text-gray-500 uppercase tracking-wider w-20">
@@ -306,6 +321,15 @@ const CustomerOrderItemsPage: React.FC = () => {
                       </td>
                       <td className="px-4 py-2 whitespace-nowrap">
                         <div className="text-[10px] text-gray-900">{row.customer_name || 'Unknown'}</div>
+                      </td>
+                      <td className="px-4 py-2 whitespace-nowrap">
+                        <div className="text-[10px] text-gray-900">{row.region_name || '—'}</div>
+                      </td>
+                      <td className="px-4 py-2 whitespace-nowrap">
+                        <div className="text-[10px] text-gray-900">{row.outlet_type_name || '—'}</div>
+                      </td>
+                      <td className="px-4 py-2 whitespace-nowrap">
+                        <div className="text-[10px] text-gray-900">{row.outlet_account_name || '—'}</div>
                       </td>
                       <td className="px-4 py-2">
                         <div className="text-[10px] text-gray-900">{row.product_name || `Product ${row.product_id}`}</div>
