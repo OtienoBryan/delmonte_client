@@ -148,6 +148,7 @@ export interface User {
     rider_contact?: string;
     assigned_at?: string;
     delivery_image?: string;
+    delivery_notes?: string;
     customer_balance?: string;
     received_by?: number;
     returned_at?: string;
@@ -158,6 +159,7 @@ export interface User {
     id: number;
     sales_order_id: number;
     product_id: number;
+    product_name?: string;
     quantity: number;
     unit_price: number;
     total_price: number;

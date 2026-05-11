@@ -6,6 +6,7 @@ import {
   Search, 
   Filter, 
   Eye, 
+  Download,
   Calendar,
   User,
   Package,
@@ -39,6 +40,9 @@ const CustomerOrdersPage: React.FC = () => {
   const [startDate, setStartDate] = useState(new Date().toISOString().split('T')[0]);
   const [endDate, setEndDate] = useState(new Date().toISOString().split('T')[0]);
   const [riderFilter, setRiderFilter] = useState<number | null>(null);
+  const [fmrFilter, setFmrFilter] = useState<string>('');
+  const [outletTypeFilter, setOutletTypeFilter] = useState<string>('');
+  const [exporting, setExporting] = useState(false);
   const [totalOrders, setTotalOrders] = useState(0);
   const [apiStatusCounts, setApiStatusCounts] = useState<Record<string, number>>({});
   const [selectedOrder, setSelectedOrder] = useState<SalesOrder | null>(null);
@@ -55,6 +59,7 @@ const CustomerOrdersPage: React.FC = () => {
       quantity: number;
       unit_price: number;
       total_price: number;
+      tax_amount: number;
       tax_type?: '16%' | 'zero_rated' | 'exempted';
     }>
   });
@@ -214,12 +219,20 @@ const CustomerOrdersPage: React.FC = () => {
         params.append('search', searchTerm);
       }
 
+      if (fmrFilter) {
+        params.append('salesrep', fmrFilter);
+      }
+
       if (customerFilter) {
         params.append('client_id', customerFilter);
       }
 
       if (outletAccountFilter) {
         params.append('outlet_account_id', outletAccountFilter);
+      }
+
+      if (outletTypeFilter) {
+        params.append('outlet_type', outletTypeFilter);
       }
       
       // Single API call to get all needed data
@@ -243,7 +256,7 @@ const CustomerOrdersPage: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [page, limit, myStatusFilter, riderFilter, startDate, endDate, searchTerm, customerFilter, outletAccountFilter]);
+  }, [page, limit, myStatusFilter, riderFilter, startDate, endDate, searchTerm, customerFilter, outletAccountFilter, fmrFilter, outletTypeFilter]);
 
   // Lazy load products only when needed (when editing)
   const fetchProducts = useCallback(async () => {
@@ -353,6 +366,86 @@ const CustomerOrdersPage: React.FC = () => {
     }).format(amount);
   };
 
+  const buildCsv = (rows: SalesOrder[]) => {
+    const escape = (value: any) => {
+      if (value == null) return '';
+      const s = String(value);
+      return /[",\n\r]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+    };
+
+    const headers = [
+      'Order #',
+      'Customer',
+      'Region',
+      'Outlet Type',
+      'Outlet Account',
+      'FMR',
+      'Cases',
+      'Date'
+    ];
+
+    const lines = rows.map((o) => [
+      escape(o.so_number),
+      escape(o.customer_name || o.customer?.name || ''),
+      escape(o.region_name || ''),
+      escape(o.client_type_name || ''),
+      escape(o.outlet_account_name || ''),
+      escape(o.salesrep || o.created_by_user?.full_name || ''),
+      escape(o.lpo_number ?? ''),
+      escape(o.order_date || '')
+    ].join(','));
+
+    return [headers.join(','), ...lines].join('\r\n');
+  };
+
+  const exportCsv = async () => {
+    try {
+      setExporting(true);
+      setError(null);
+
+      const params = new URLSearchParams({
+        page: '1',
+        limit: '-1'
+      });
+
+      if (myStatusFilter && myStatusFilter !== 'all') params.append('status', myStatusFilter);
+      if (riderFilter) params.append('rider_id', riderFilter.toString());
+      if (startDate) params.append('start_date', startDate);
+      if (endDate) params.append('end_date', endDate);
+      if (searchTerm) params.append('search', searchTerm);
+      if (fmrFilter) params.append('salesrep', fmrFilter);
+      if (customerFilter) params.append('client_id', customerFilter);
+      if (outletAccountFilter) params.append('outlet_account_id', outletAccountFilter);
+      if (outletTypeFilter) params.append('outlet_type', outletTypeFilter);
+
+      const response = await axios.get(`/api/customer-orders/data?${params.toString()}`);
+      const ordersToExport: SalesOrder[] = Array.isArray(response.data?.data?.orders)
+        ? response.data.data.orders
+        : [];
+
+      const csv = buildCsv(ordersToExport);
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+
+      const nameParts = ['customer-orders'];
+      if (startDate) nameParts.push(startDate);
+      if (endDate) nameParts.push(endDate);
+      const filename = `${nameParts.join('_')}.csv`;
+
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } catch (e: any) {
+      setError(e?.response?.data?.details || e?.message || 'Failed to export CSV');
+    } finally {
+      setExporting(false);
+    }
+  };
+
   const getStatusBadge = (status?: string) => {
     const statusColors: { [key: string]: string } = {
       'draft': 'bg-gray-100 text-gray-800',
@@ -454,6 +547,7 @@ const CustomerOrdersPage: React.FC = () => {
           quantity: item.quantity,
           unit_price: item.unit_price,
           total_price: item.total_price,
+          tax_amount: Number((item as any).tax_amount) || 0,
           tax_type: (item as any).tax_type || '16%'
         };
       }) || []
@@ -517,6 +611,7 @@ const CustomerOrdersPage: React.FC = () => {
       quantity: 1,
       unit_price: 0,
       total_price: 0,
+      tax_amount: 0,
       tax_type: '16%' as '16%'
     };
     const newIndex = editForm.items.length;
@@ -1010,13 +1105,22 @@ const CustomerOrdersPage: React.FC = () => {
                 {filteredOrders.length} orders
               </span>
               <button
+                onClick={exportCsv}
+                disabled={exporting || filteredOrders.length === 0}
+                className="px-3 py-1.5 text-xs bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 transition-colors flex items-center space-x-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
+                title="Export to CSV"
+              >
+                <Download className="h-3.5 w-3.5" />
+                <span>{exporting ? 'Exporting…' : 'Export CSV'}</span>
+              </button>
+              <button
                 onClick={() => navigate('/')}
                 className="px-3 py-1.5 text-xs bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors flex items-center space-x-1.5"
               >
                 <Home className="h-3.5 w-3.5" />
                 <span>Home</span>
               </button>
-              <button
+              {/* <button
                 onClick={() => navigate('/financial/customer-order-items')}
                 className="px-3 py-1.5 text-xs bg-white text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors flex items-center space-x-1.5"
                 title="View all ordered items"
@@ -1030,7 +1134,7 @@ const CustomerOrdersPage: React.FC = () => {
               >
                 <Eye className="h-3.5 w-3.5" />
                 <span>Add Order</span>
-              </button>
+              </button> */}
             </div>
           </div>
         </div>
@@ -1046,7 +1150,7 @@ const CustomerOrdersPage: React.FC = () => {
         {/* Filters */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-3 mb-3">
           {/* Active Filters Indicator */}
-          {(searchTerm || startDate || endDate || riderFilter || customerFilter || outletAccountFilter) && (
+          {(searchTerm || startDate || endDate || riderFilter || customerFilter || outletAccountFilter || fmrFilter || outletTypeFilter) && (
             <div className="mb-2.5 p-2 bg-blue-50 border border-blue-200 rounded-md">
               <div className="flex items-center justify-between flex-wrap gap-1.5">
                 <div className="flex items-center gap-1.5 flex-wrap">
@@ -1071,6 +1175,16 @@ const CustomerOrdersPage: React.FC = () => {
                     {outletAccountFilter && (
                       <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[9px] font-medium bg-blue-100 text-blue-800">
                         Outlet Account: {outletAccounts.find(oa => oa.id === Number(outletAccountFilter))?.name || outletAccountFilter}
+                      </span>
+                    )}
+                    {fmrFilter && (
+                      <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[9px] font-medium bg-blue-100 text-blue-800">
+                        FMR: {fmrFilter}
+                      </span>
+                    )}
+                    {outletTypeFilter && (
+                      <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[9px] font-medium bg-blue-100 text-blue-800">
+                        Outlet Type: {outletTypeFilter}
                       </span>
                     )}
                     {startDate && endDate && (
@@ -1098,6 +1212,8 @@ const CustomerOrdersPage: React.FC = () => {
                     setRiderFilter(null);
                     setCustomerFilter('');
                     setOutletAccountFilter('');
+                    setFmrFilter('');
+                    setOutletTypeFilter('');
                     setPage(1);
                   }}
                   className="text-[9px] text-blue-700 hover:text-blue-900 font-medium underline"
@@ -1160,6 +1276,8 @@ const CustomerOrdersPage: React.FC = () => {
                     setRiderFilter(null);
                     setCustomerFilter('');
                     setOutletAccountFilter('');
+                    setFmrFilter('');
+                    setOutletTypeFilter('');
                     setPage(1);
                   }}
                   className="px-2.5 py-1.5 text-[10px] bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-1 focus:ring-gray-400 transition-colors border border-gray-300"
@@ -1220,6 +1338,66 @@ const CustomerOrdersPage: React.FC = () => {
                   ))}
                 </select>
               </div>
+
+              <div className="w-full sm:w-56">
+                <label className="block text-[9px] font-medium text-gray-600 mb-0.5">
+                  FMR
+                </label>
+                <select
+                  value={fmrFilter}
+                  onChange={(e) => {
+                    setFmrFilter(e.target.value);
+                    setPage(1);
+                  }}
+                  className="w-full px-2 py-1.5 text-[10px] border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option value="">All FMRs</option>
+                  {Array.from(
+                    new Set(
+                      orders
+                        .map((o) => o.salesrep || o.created_by_user?.full_name || '')
+                        .map((s) => String(s).trim())
+                        .filter(Boolean)
+                    )
+                  )
+                    .sort((a, b) => a.localeCompare(b))
+                    .map((name) => (
+                      <option key={name} value={name}>
+                        {name}
+                      </option>
+                    ))}
+                </select>
+              </div>
+
+              <div className="w-full sm:w-56">
+                <label className="block text-[9px] font-medium text-gray-600 mb-0.5">
+                  Outlet Type
+                </label>
+                <select
+                  value={outletTypeFilter}
+                  onChange={(e) => {
+                    setOutletTypeFilter(e.target.value);
+                    setPage(1);
+                  }}
+                  className="w-full px-2 py-1.5 text-[10px] border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option value="">All outlet types</option>
+                  {Array.from(
+                    new Set(
+                      orders
+                        .map((o) => o.client_type_name || '')
+                        .map((s) => String(s).trim())
+                        .filter(Boolean)
+                    )
+                  )
+                    .sort((a, b) => a.localeCompare(b))
+                    .map((name) => (
+                      <option key={name} value={name}>
+                        {name}
+                      </option>
+                    ))}
+                </select>
+              </div>
             </div>
 
           </div>
@@ -1245,6 +1423,9 @@ const CustomerOrdersPage: React.FC = () => {
                 <thead className="bg-gray-50">
                   <tr>
                     <th className="px-4 py-2 text-left text-[9px] font-medium text-gray-500 uppercase tracking-wider">
+                      Date
+                    </th>
+                    <th className="px-4 py-2 text-left text-[9px] font-medium text-gray-500 uppercase tracking-wider">
                       Order Details
                     </th>
                     <th className="px-4 py-2 text-left text-[9px] font-medium text-gray-500 uppercase tracking-wider">
@@ -1263,16 +1444,20 @@ const CustomerOrdersPage: React.FC = () => {
                       FMR
                     </th>
                     <th className="px-4 py-2 text-left text-[9px] font-medium text-gray-500 uppercase tracking-wider">
-                      Date
-                    </th>
-                    <th className="px-2 py-2 text-left text-[9px] font-medium text-gray-500 uppercase tracking-wider w-32">
-                      Actions
+                      Cases
                     </th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
                   {pageRows.map((order) => (
                     <tr key={order.id} className="hover:bg-gray-50">
+                      <td className="px-4 py-2 whitespace-nowrap">
+                        <div className="flex items-center">
+                          <div className="text-[10px] text-gray-900">
+                            {formatDate(order.order_date)}
+                          </div>
+                        </div>
+                      </td>
                       <td className="px-4 py-2 whitespace-nowrap">
                         <div className="flex items-center">
                            
@@ -1321,85 +1506,8 @@ const CustomerOrdersPage: React.FC = () => {
                         </div>
                       </td>
                       <td className="px-4 py-2 whitespace-nowrap">
-                        <div className="flex items-center">
-                          <div className="text-[10px] text-gray-900">
-                            {formatDate(order.order_date)}
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-2 py-2 text-[10px] font-medium">
-                        <div className="flex flex-wrap gap-1 items-center">
-                          <button
-                            onClick={() => openViewModal(order)}
-                            className="text-blue-600 hover:text-blue-900 p-1 rounded hover:bg-blue-50 flex items-center"
-                            title="View Order"
-                          >
-                            <Eye className="h-3 w-3" />
-                          </button>
-                          {order.my_status === 1 && user?.role === 'stock' && (
-                            <button
-                              onClick={() => openAssignRiderModal(order)}
-                              className="text-green-600 hover:text-green-900 p-1 rounded hover:bg-green-50 flex items-center"
-                              title="Assign Rider"
-                            >
-                              <Truck className="h-3 w-3" />
-                            </button>
-                          )}
-                          {order.my_status === 2 && (
-                            <button
-                              onClick={() => openCompleteDeliveryModal(order)}
-                              className="text-blue-600 hover:text-blue-900 p-1 rounded hover:bg-blue-50 flex items-center"
-                              title="Complete Delivery"
-                            >
-                              <Package className="h-3 w-3" />
-                            </button>
-                          )}
-                          {order.status === 'delivered' && (
-                            <button
-                              onClick={() => openDeliveryDetailsModal(order)}
-                              className="text-green-600 hover:text-green-900 p-1 rounded hover:bg-green-50 flex items-center"
-                              title="View Delivery Details"
-                            >
-                              <Truck className="h-3 w-3" />
-                            </button>
-                          )}
-                          {(order.my_status === 4 || order.my_status === 6) && user?.role === 'stock' && (
-                            order.my_status === 6 ? (
-                              <button
-                                disabled
-                                className="text-gray-400 p-1 rounded cursor-not-allowed flex items-center"
-                                title="Products already returned to stock"
-                              >
-                                <ArrowLeft className="h-3 w-3" />
-                              </button>
-                            ) : (
-                              <button
-                                onClick={() => openReceiveToStockModal(order)}
-                                className="text-orange-600 hover:text-orange-900 p-1 rounded hover:bg-orange-50 flex items-center"
-                                title="Receive to Stock"
-                              >
-                                <ArrowLeft className="h-3 w-3" />
-                              </button>
-                            )
-                          )}
-                          {(order.my_status === 0 || order.my_status === 1 || order.my_status === 2 || order.my_status === 3) && (
-                            <button
-                              onClick={() => navigate(`/sales-orders/${order.id}`)}
-                              className="text-purple-600 hover:text-purple-900 p-1 rounded hover:bg-purple-50 flex items-center"
-                              title="View Invoice"
-                            >
-                              <Package className="h-3 w-3" />
-                            </button>
-                          )}
-                          {(order.my_status === 1 || order.my_status === 2 || order.my_status === 3) && (
-                            <button
-                              onClick={() => navigate(`/delivery-note/${order.id}`)}
-                              className="text-purple-600 hover:text-purple-900 p-1 rounded hover:bg-purple-50 flex items-center"
-                              title="Delivery Note"
-                            >
-                              <Package className="h-3 w-3" />
-                            </button>
-                          )}
+                        <div className="text-[10px] text-gray-900">
+                          {order.lpo_number != null && String(order.lpo_number).trim() !== '' ? String(order.lpo_number) : '—'}
                         </div>
                       </td>
                     </tr>
@@ -2609,16 +2717,19 @@ const CustomerOrdersPage: React.FC = () => {
                   <div className="bg-purple-50 p-4 rounded-lg">
                     <h3 className="text-xs font-semibold text-gray-900 mb-3">Delivery Image</h3>
                     <div className="bg-white p-3 rounded border">
+                      {(() => {
+                        const deliveryImage = deliveryDetailsOrder.delivery_image;
+                        if (!deliveryImage) return null;
+                        const src = deliveryImage.startsWith('http')
+                          ? deliveryImage
+                          : `/uploads/products/${deliveryImage}`;
+                        return (
                       <img 
-                        src={deliveryDetailsOrder.delivery_image.startsWith('http') 
-                          ? deliveryDetailsOrder.delivery_image 
-                          : `/uploads/products/${deliveryDetailsOrder.delivery_image}`}
+                        src={src}
                         alt="Delivery Image"
                         className="max-w-full h-auto rounded-lg shadow-sm cursor-pointer hover:shadow-md transition-shadow"
                         onClick={() => window.open(
-                          deliveryDetailsOrder.delivery_image.startsWith('http') 
-                            ? deliveryDetailsOrder.delivery_image 
-                            : `/uploads/products/${deliveryDetailsOrder.delivery_image}`, 
+                          src, 
                           '_blank'
                         )}
                         onError={(e) => {
@@ -2630,6 +2741,8 @@ const CustomerOrdersPage: React.FC = () => {
                           }
                         }}
                       />
+                        );
+                      })()}
                       <p className="text-xs text-gray-500 mt-2">Click image to view full size</p>
                     </div>
                   </div>
