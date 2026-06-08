@@ -116,8 +116,9 @@ export interface User {
   
   export interface SalesOrder {
     id: number;
-    so_number: string;
+    so_number?: string;
     lpo_number?: string | null;
+    cases?: number | null;
     customer_id: number;
     client_id?: number; // Added for database compatibility
     sales_rep_id?: number; // Added for sales rep relationship

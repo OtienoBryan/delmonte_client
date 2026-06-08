@@ -6,7 +6,6 @@ import { Download, Home, Package, Search, ShoppingCart } from 'lucide-react';
 type OrderItemRow = {
   id: number;
   sales_order_id: number;
-  so_number: string;
   client_id: number;
   customer_name: string | null;
   region_name: string | null;
@@ -56,7 +55,7 @@ const CustomerOrderItemsPage: React.FC = () => {
 
     const headers = ['Order #', 'Customer', 'Region', 'Outlet Type', 'Outlet Account', 'Product', 'Qty', 'Date'];
     const lines = rows.map((r) => [
-      escape(r.so_number),
+      escape(`Order #${r.sales_order_id}`),
       escape(r.customer_name || ''),
       escape(r.region_name || ''),
       escape(r.outlet_type_name || ''),
@@ -317,7 +316,7 @@ const CustomerOrderItemsPage: React.FC = () => {
                   {items.map((row) => (
                     <tr key={row.id} className="hover:bg-gray-50">
                       <td className="px-4 py-2 whitespace-nowrap">
-                        <div className="text-[10px] font-medium text-gray-900">{row.so_number || '—'}</div>
+                        <div className="text-[10px] font-medium text-gray-900">Order #{row.sales_order_id}</div>
                       </td>
                       <td className="px-4 py-2 whitespace-nowrap">
                         <div className="text-[10px] text-gray-900">{row.customer_name || 'Unknown'}</div>

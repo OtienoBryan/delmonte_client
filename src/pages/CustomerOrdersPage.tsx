@@ -385,13 +385,13 @@ const CustomerOrdersPage: React.FC = () => {
     ];
 
     const lines = rows.map((o) => [
-      escape(o.so_number),
+      escape(`Order #${o.id}`),
       escape(o.customer_name || o.customer?.name || ''),
       escape(o.region_name || ''),
       escape(o.client_type_name || ''),
       escape(o.outlet_account_name || ''),
       escape(o.salesrep || o.created_by_user?.full_name || ''),
-      escape(o.lpo_number ?? ''),
+      escape(o.cases ?? ''),
       escape(o.order_date || '')
     ].join(','));
 
@@ -831,7 +831,7 @@ const CustomerOrdersPage: React.FC = () => {
     setReceivingOrder(order);
     setReceiveForm({
       store_id: '',
-      notes: `Return to stock from cancelled order ${order.so_number}`,
+      notes: `Return to stock from cancelled order #${order.id}`,
       items: order.items?.map(item => {
         // Try to find the product in our products list to get the cost price
         const product = products.find(p => p.id === item.product_id);
@@ -1463,7 +1463,7 @@ const CustomerOrdersPage: React.FC = () => {
                            
                           <div className="ml-2">
                             <div className="text-[10px] font-medium text-gray-900">
-                              {order.so_number}
+                              Order #{order.id}
                             </div>
                             
                           </div>
@@ -1507,7 +1507,7 @@ const CustomerOrdersPage: React.FC = () => {
                       </td>
                       <td className="px-4 py-2 whitespace-nowrap">
                         <div className="text-[10px] text-gray-900">
-                          {order.lpo_number != null && String(order.lpo_number).trim() !== '' ? String(order.lpo_number) : '—'}
+                          {order.cases != null ? order.cases : '—'}
                         </div>
                       </td>
                     </tr>
@@ -1556,7 +1556,7 @@ const CustomerOrdersPage: React.FC = () => {
                 <div className="flex items-center justify-between mb-3 pb-2 border-b border-gray-200">
                   <div>
                     <h3 className="text-xs font-semibold text-gray-900">
-                      {isEditing ? 'Edit Order' : 'View Order'}: {selectedOrder.so_number}
+                      {isEditing ? 'Edit Order' : 'View Order'}: Order #{selectedOrder.id}
                     </h3>
                     <p className="text-[9px] text-gray-500 mt-0.5">
                       {isEditing ? 'Edit order details and products' : 'Order Details'}
@@ -1635,7 +1635,7 @@ const CustomerOrdersPage: React.FC = () => {
                       </label>
                       <input
                         type="text"
-                        value={selectedOrder.so_number}
+                        value={`Order #${selectedOrder.id}`}
                         disabled
                         className="w-full px-2 py-1.5 text-xs border border-gray-300 rounded-md bg-gray-100 text-gray-500"
                       />
@@ -2015,7 +2015,7 @@ const CustomerOrdersPage: React.FC = () => {
                       </label>
                       <input
                         type="text"
-                        value={selectedOrder.so_number}
+                        value={`Order #${selectedOrder.id}`}
                         disabled
                         className="w-full px-2 py-1.5 text-xs border border-gray-300 rounded-md bg-gray-100 text-gray-500"
                       />
@@ -2163,7 +2163,7 @@ const CustomerOrdersPage: React.FC = () => {
           <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
             <div className="relative top-20 mx-auto p-5 border w-11/12 max-w-md shadow-lg rounded-md bg-white">
               <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-bold">Assign Rider to Order {assigningOrder.so_number}</h2>
+                <h2 className="text-xl font-bold">Assign Rider to Order #{assigningOrder.id}</h2>
                 <button
                   onClick={closeAssignRiderModal}
                   className="text-gray-400 hover:text-gray-600"
@@ -2224,7 +2224,7 @@ const CustomerOrdersPage: React.FC = () => {
           <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
             <div className="relative top-20 mx-auto p-5 border w-11/12 max-w-md shadow-lg rounded-md bg-white">
               <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-bold">Complete Delivery - Order {completingOrder.so_number}</h2>
+                <h2 className="text-xl font-bold">Complete Delivery - Order #{completingOrder.id}</h2>
                 <button
                   onClick={closeCompleteDeliveryModal}
                   className="text-gray-400 hover:text-gray-600"
@@ -2419,7 +2419,7 @@ const CustomerOrdersPage: React.FC = () => {
                       Receive Products to Stock
                     </h3>
                     <p className="text-sm text-gray-500 mt-1">
-                      Order: {receivingOrder.so_number} - {receivingOrder.customer_name || receivingOrder.customer?.name}
+                      Order #{receivingOrder.id} - {receivingOrder.customer_name || receivingOrder.customer?.name}
                     </p>
                     <p className="text-sm text-gray-500 mt-1">
                       Order Date: {formatDate(receivingOrder.order_date)} | Total Items: {receivingOrder.items?.length || 0}
@@ -2641,7 +2641,7 @@ const CustomerOrdersPage: React.FC = () => {
           <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
             <div className="relative top-20 mx-auto p-5 border w-11/12 max-w-2xl shadow-lg rounded-md bg-white">
               <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-bold text-green-600">Delivery Details - Order {deliveryDetailsOrder.so_number}</h2>
+                <h2 className="text-xl font-bold text-green-600">Delivery Details - Order #{deliveryDetailsOrder.id}</h2>
                 <button
                   onClick={closeDeliveryDetailsModal}
                   className="text-gray-400 hover:text-gray-600"
@@ -2657,7 +2657,7 @@ const CustomerOrdersPage: React.FC = () => {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700">Order Number</label>
-                      <p className="text-sm text-gray-900">{deliveryDetailsOrder.so_number}</p>
+                      <p className="text-sm text-gray-900">Order #{deliveryDetailsOrder.id}</p>
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700">Customer</label>
